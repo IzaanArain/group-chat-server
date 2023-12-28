@@ -1,5 +1,7 @@
+const { hash } = require("bcrypt");
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
+const bcrypt = require("bcrypt");
 
 const userSchema = new Schema(
   {
@@ -11,6 +13,12 @@ const userSchema = new Schema(
       lowercase: true,
     },
     name: {
+      type: String,
+      required: false,
+      trim: true,
+      default: null,
+    },
+    password: {
       type: String,
       required: false,
       trim: true,
@@ -52,7 +60,7 @@ const userSchema = new Schema(
       type: Number,
       default: 0,
     },
-    isForget: {
+    isForgetPassword: {
       type: Number,
       default: 0,
     },
@@ -94,4 +102,26 @@ const userSchema = new Schema(
   }
 );
 
+userSchema.pre("save", function (next) {
+  const user = this;
+  if (!user.isModified("password")) {
+    return next();
+  }
+  bcrypt.genSalt(10, (err, salt) => {
+    if (err) {
+      return next(err);
+    }
+    bcrypt.hash(user.password, salt, (err, hashedPassword) => {
+      if (err) {
+        return next(err);
+      }
+      user.password = hashedPassword;
+      next();
+    });
+  });
+});
+
+userSchema.methods.genAuthToken=async function(){
+  
+}
 module.exports = mongoose.model("Users", userSchema);
