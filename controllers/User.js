@@ -264,9 +264,80 @@ const socialLogin = async (req, res) => {
   }
 };
 
+const resendOtp = async (req, res) => {
+  try {
+    const { id } = req.body;
+    const user = await User.findOne({ _id: id });
+    if (!user) {
+      return res.status(400).send({ status: 0, message: "Invalid User" });
+    } else {
+      const otp = Math.floor(100000 + Math.random() * 900000);
+      user.otp = 123456;
+      await user.save();
+      return res
+        .status(200)
+        .send({
+          status: 1,
+          message:
+            "We have resend  OTP verification code at your email address",
+          data: { _id: user._id },
+        });
+    }
+  } catch (err) {
+    console.error("Error", err.message);
+    return res.status(500).send({
+      status: 0,
+      message: "Something went wrong",
+    });
+  }
+};
+
+const forgetPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const emailValidation = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    const user = await User.findOne({ email: email?.toLowerCase() });
+    if (!email) {
+      return res.status(400).send({ status: 0, message: "Email field can't be empty" });
+    } else if (!email.match(emailValidation)) {
+      return res.status(400).send({ status: 0, message: "Invalid email address" });
+    }
+    if (!user) {
+      return res.status(400).send({ status: 0, message: "User not found" });
+    } else {
+      const otp = Math.floor(100000 + Math.random() * 900000);
+      user.otp = 123456;
+      user.token = null;
+      user.isVerified=0;
+      user.isForget = 1;
+      await user.save();
+      return res.status(200).send({ status: 1, message: "OTP verification code has been sent to your email.", data: { _id: user._id } });
+    }
+  } catch (err) {
+    console.error("Error", err.message);
+    return res.status(500).send({
+      status: 0,
+      message: "Something went wrong",
+    });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+  } catch (err) {
+    console.error("Error", err.message);
+    return res.status(500).send({
+      status: 0,
+      message: "Something went wrong",
+    });
+  }
+};
 module.exports = {
   register,
   otpVerify,
   login,
   socialLogin,
+  resendOtp,
+  forgetPassword,
+  resetPassword
 };

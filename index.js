@@ -12,10 +12,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(userRoutes);
 
-app.get("/", (req, res) => {
-  res.send("<h1>hello world</h1>");
-});
-
 PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`http://localhost:${PORT}`);
