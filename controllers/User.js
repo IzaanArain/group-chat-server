@@ -8,7 +8,7 @@ const register = async (req, res) => {
       password: typed_password,
       confirmedPassword,
       deviceType,
-      deviceToken
+      deviceToken,
     } = req.body;
     if (!typed_email) {
       return res.status(400).send({
@@ -69,14 +69,17 @@ const register = async (req, res) => {
     const user = new User({
       email: typed_email,
       password: typed_password,
-      otp:123456,
+      otp: 123456,
       deviceType,
-      deviceToken
+      deviceToken,
     });
     await user.save();
     res.status(200).send({
       status: 1,
       message: "user registered succesfully",
+      data: {
+        id: user._id,
+      },
     });
   } catch (err) {
     console.error("Error", err.message);
@@ -87,37 +90,51 @@ const register = async (req, res) => {
   }
 };
 
-const otpVerify=async(req,res)=>{
-  try{
-    const {otp,userId}=req.body;
+const otpVerify = async (req, res) => {
+  try {
+    const { otp, userId } = req.body;
     if (!otp) {
-      return res.status(400).send({ status: 0, message: "OTP field can't be empty." });
+      return res
+        .status(400)
+        .send({ status: 0, message: "OTP field can't be empty." });
     } else {
       const user = await User.findOne({ _id: userId });
       if (!user) {
         return res.status(400).send({ status: 0, message: "Invalid User" });
       } else {
         if (otp != user.otp) {
-          return res.status(400).send({ status: 0, message: "Invalid OTP Verification Code." });
+          return res
+            .status(400)
+            .send({ status: 0, message: "Invalid OTP Verification Code." });
         } else {
           // await user.generateAuthToken();
           user.isVerified = 1;
           user.save();
-          return res.status(200).send({ status: 1, message: "Account Verified successfully", data: user });
+          return res.status(200).send({
+            status: 1,
+            message: "Account Verified successfully",
+            data: user,
+          });
         }
       }
     }
-  }catch(err){
+  } catch (err) {
     console.error("Error", err.message);
     return res.status(500).send({
       status: 0,
       message: "Something went wrong",
     });
   }
-}
+};
+
 const login = async (req, res) => {
   try {
-    const { email: typed_email, password: typed_password,deviceType,deviceToken } = req.body;
+    const {
+      email: typed_email,
+      password: typed_password,
+      deviceType,
+      deviceToken,
+    } = req.body;
     if (!typed_email) {
       return res.status(400).send({
         status: 0,
@@ -154,20 +171,90 @@ const login = async (req, res) => {
       });
     }
     // const isMatch=await user.comparePassword(typed_password);
-    const isMatch=await  bcrypt.compare(typed_password, user.password)
-   if(!isMatch){
-    return res.status(400).send({ status: 0, message: "Invalid password" });
-   } else if (user?.isDeleted == 1) {
-    return res.status(200).send({ status: 1, message: `Account is deleted` });
-  } else if (user.isVerified === 0) {
-    return res.status(400).send({ status: 0, message: "User is Not Verified"});
-  }else{
-    await user.generateAuthToken();
-    user.deviceType = deviceType;
-    user. deviceToken =  deviceToken;
-    await user.save();
-    res.status(200).send({ status: 1, message: "Login successfully", data: user });
+    const isMatch = await bcrypt.compare(typed_password, user.password);
+    if (!isMatch) {
+      return res.status(400).send({ status: 0, message: "Invalid password" });
+    } else if (user?.isDeleted == 1) {
+      return res.status(200).send({ status: 1, message: `Account is deleted` });
+    } else if (user.isVerified === 0) {
+      return res
+        .status(400)
+        .send({ status: 0, message: "User is Not Verified" });
+    } else {
+      await user.generateAuthToken();
+      user.deviceType = deviceType;
+      user.deviceToken = deviceToken;
+      await user.save();
+      res
+        .status(200)
+        .send({ status: 1, message: "Login successfully", data: user });
+    }
+  } catch (err) {
+    console.error("Error", err.message);
+    return res.status(500).send({
+      status: 0,
+      message: "Something went wrong",
+    });
   }
+};
+
+const socialLogin = async (req, res) => {
+  try {
+    const { socialToken, socialType, deviceToken, deviceType, socialPhone } =
+      req.body;
+    if (!socialToken) {
+      return res
+        .status(400)
+        .send({ status: 0, message: "User Social Token field can't be empty" });
+    } else if (!socialType) {
+      return res
+        .status(400)
+        .send({ status: 0, message: "User Social Type field can't be empty" });
+    } else {
+      const user = await User.findOne({ socialToken: socialToken });
+      if (!user) {
+        const newUser = new User({
+          socialToken,
+          socialType,
+          deviceToken,
+          deviceType,
+          socialPhone,
+        });
+        await newUser.save();
+        newUser.isVerified = 1;
+        await newUser.generateAuthToken();
+        return res.status(200).send({
+          status: 1,
+          message: "Account Created Successfully",
+          data: newUser,
+        });
+      } else {
+        const userDeleted = user?.isDeleted;
+        const user_blocked = user?.isBlocked;
+        if (userDeleted === 1) {
+          return res.status(200).send({
+            status: 0,
+            message: "user account has been deleted",
+          });
+        } else if (user_blocked === 1) {
+          return res.status(200).send({
+            status: 0,
+            message: "user account has been blocked",
+          });
+        } else {
+          user.isVerified = 1;
+          user.deviceToken = deviceToken;
+          user.deviceType = deviceType;
+          await user.save();
+          await user.generateAuthToken();
+          return res.status(200).send({
+            status: 1,
+            message: "social login successful",
+            data: user,
+          });
+        }
+      }
+    }
   } catch (err) {
     console.error("Error", err.message);
     return res.status(500).send({
@@ -181,4 +268,5 @@ module.exports = {
   register,
   otpVerify,
   login,
+  socialLogin,
 };
