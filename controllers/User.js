@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const mongoose=require("mongoose");
+const { use } = require("../routes/User");
 const User=mongoose.model("User");
 // const User = require("../models/User");
 
@@ -414,6 +415,84 @@ const completeProfile = async (req, res) => {
   }
 };
 
+const changePassword= async (req,res)=>{
+  try{
+    const userId=req?.user?._id;
+    const { existingPassword, confirmNewPassword, newPassword } = req.body;
+    const passwordValidation = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const userCheck = await User.findOne({ _id: userId });
+    const isMatch = await bcrypt.compare(existingPassword, userCheck.password);
+    if (!isMatch) {
+      return res.status(400).send({ status: 0, message: "Invalid Current Password" });
+    } else if (!newPassword) {
+      return res.status(400).send({ status: 0, message: "New Password field can't be empty" });
+    } else if (!newPassword.match(passwordValidation)) {
+      return res.status(400).send({ status: 0, message: "Password should be 8 characters long (should contain uppercase, lowercase, numeric and special character)" });
+    } else if (!confirmNewPassword) {
+      return res.status(400).send({ status: 0, message: "Confirm New Password field can't be empty" });
+    } else if (!confirmNewPassword.match(passwordValidation)) {
+      return res.status(400).send({ status: 0, message: "Password should be 8 characters long (should contain uppercase, lowercase, numeric and special character)" });
+    } else if (newPassword !== confirmNewPassword) {
+      return res.status(400).send({ status: 0, message: "New Password and Confirm New Password should be same" });
+    } else if (existingPassword == newPassword || existingPassword == confirmNewPassword) {
+      return res.status(400).send({ status: 0, message: "Current password and new password can't be same" });
+    } else if (!userCheck) {
+      return res.status(400).send({ status: 0, message: "User Not Found" });
+    } else {
+      await userCheck.comparePassword(existingPassword);
+      const salt = await bcrypt.genSalt(10);
+      const pass = await bcrypt.hash(newPassword, salt);
+      await User.findByIdAndUpdate({ _id: userId }, { $set: { password: pass } });
+      res.status(200).send({ status: 1, message: "Password changed successfully" });
+    }
+  }catch(err){
+    console.error("Error", err.message);
+    return res.status(500).send({
+      status: 0,
+      message: "Something went wrong",
+    });
+  }
+};
+
+const deleteProfile=async (req, res)=>{
+  try{
+    const userId=req.user._id;
+    const deleteUser = await User.findByIdAndUpdate({ _id: userId }, { $set: { isDeleted: 1 } });
+    if (deleteUser) {
+      res.status(200).send({ status: 1, message: "Account deleted successfully" });
+    } else {
+      return res.status(400).send({ status: 0, message: "User not found" });
+    }
+  }catch(err){
+    console.error("Error", err.message);
+    return res.status(500).send({
+      status: 0,
+      message: "Something went wrong",
+    });
+  }
+};
+
+const signOut=async (req,res)=>{
+  try{
+    const userId=req.user._id;
+    const user = await User.findOne({ _id: userId });
+    if (!user) {
+      return res.status(400).send({ status: 0, message: "User not found" });
+    } else {
+      user.token = null;
+      user.deviceType = null;
+      user.deviceToken = null;
+      user.save();
+      res.status(200).send({ status: 1, message: "Logout successfully" });
+    }
+  }catch (err){
+    console.error("Error", err.message);
+    return res.status(500).send({
+      status: 0,
+      message: "Something went wrong",
+    });
+  }
+}
 module.exports = {
   register,
   otpVerify,
@@ -423,4 +502,7 @@ module.exports = {
   forgetPassword,
   resetPassword,
   completeProfile,
+  changePassword,
+  deleteProfile,
+  signOut,
 };

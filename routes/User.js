@@ -7,7 +7,8 @@ const {
   resendOtp,
   forgetPassword,
   resetPassword,
-  completeProfile
+  completeProfile,
+  changePassword
 } = require("../controllers/User");
 const userAuth=require("../middlewares/Auth");
 const {upload}=require("../middlewares/Multer");
@@ -21,5 +22,6 @@ router.post("/user/resendOtp", resendOtp);
 router.post("/user/forgetPassword", forgetPassword);
 router.post("/user/resetPassword", resetPassword);
 router.post("/user/completeProfile", userAuth, upload.fields([{name:"profileImage"}]), completeProfile);
+router.post("/user/changePassword", userAuth, changePassword);
 
 module.exports = router;
