@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 // const mongoose=require("mongoose");
 // const User=mongoose.model("User");
-const User=require("../models/User")
+const User = require("../models/User");
 
 const register = async (req, res) => {
   try {
@@ -383,17 +383,12 @@ const resetPassword = async (req, res) => {
 
 const completeProfile = async (req, res) => {
   try {
-    const userId = req?.user?._id; 
-    const {name, phone, location}=req.body;
-    const phoneValidation= /^(\+\d{1,2}\s?)?(\d{10}|\d{3}[-\.\s]?\d{3}[-\.\s]?\d{4}|\(\d{3}\)[-\.\s]?\d{3}[-\.\s]?\d{4})$/;
-    if(!phone.match(phoneValidation)){
-      return res.status(400).send({
-        status: 0,
-        message: "please enter valid phone number",
-      });
-    }
+    const userId = req?.user?._id;
+    const { name, phone, location } = req.body;
     const profileImage = req?.files?.profileImage;
-    const profileImagePath = profileImage ? profileImage[0]?.path.replace(/\\/g, "/") : null;
+    const profileImagePath = profileImage
+      ? profileImage[0]?.path.replace(/\\/g, "/")
+      : null;
     const user = await User.findByIdAndUpdate(
       userId,
       {
@@ -427,5 +422,5 @@ module.exports = {
   resendOtp,
   forgetPassword,
   resetPassword,
-  completeProfile
+  completeProfile,
 };
