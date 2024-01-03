@@ -16,7 +16,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(userRoutes);
-// app.use(express.static("uploads"));
+app.use("/uploads",express.static("uploads"));
 
 PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
