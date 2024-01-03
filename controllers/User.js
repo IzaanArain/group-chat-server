@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
-// const mongoose=require("mongoose");
-// const User=mongoose.model("User");
-const User = require("../models/User");
+const mongoose=require("mongoose");
+const User=mongoose.model("User");
+// const User = require("../models/User");
 
 const register = async (req, res) => {
   try {

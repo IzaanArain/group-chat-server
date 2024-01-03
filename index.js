@@ -1,11 +1,12 @@
+require("./models")
 const express = require("express");
 const http = require("http");
 require("dotenv").config();
 const cors = require("cors");
 const Connect = require("./config/db");
 const userRoutes = require("./routes/User");
-Connect();
 const app = express();
+Connect();
 const server = http.createServer(app);
 app.use(
   cors({
@@ -15,7 +16,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(userRoutes);
-app.use(express.static("uploads"));
+// app.use(express.static("uploads"));
 
 PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
