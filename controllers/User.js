@@ -382,7 +382,33 @@ const resetPassword = async (req, res) => {
 
 const completeProfile = async (req, res) => {
   try {
-    
+    const userId = req?.user?._id; 
+    const {name, phone, location}=req.body;
+    const phoneValidation= /^(\+\d{1,2}\s?)?(\d{10}|\d{3}[-\.\s]?\d{3}[-\.\s]?\d{4}|\(\d{3}\)[-\.\s]?\d{3}[-\.\s]?\d{4})$/;
+    if(!phone.match(phoneValidation)){
+      return res.status(400).send({
+        status: 0,
+        message: "please enter valid phone number",
+      });
+    }
+    const profileImage = req?.files?.profileImage;
+    const profileImagePath = profileImage ? profileImage[0]?.path.replace(/\\/g, "/") : null;
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        name,
+        phone,
+        location,
+        profileImage: profileImagePath,
+        isProfileCompleted: 1,
+      },
+      { new: true }
+    );
+    return res.status(200).send({
+      status: 1,
+      message: "complete profile successful",
+      data: user,
+    });
   } catch (err) {
     console.error("Error", err.message);
     return res.status(500).send({
@@ -391,6 +417,7 @@ const completeProfile = async (req, res) => {
     });
   }
 };
+
 module.exports = {
   register,
   otpVerify,
@@ -399,4 +426,5 @@ module.exports = {
   resendOtp,
   forgetPassword,
   resetPassword,
+  completeProfile
 };

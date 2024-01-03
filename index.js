@@ -2,15 +2,20 @@ const express = require("express");
 const http = require("http");
 require("dotenv").config();
 const cors = require("cors");
-const Connect=require("./config/db")
-const userRoutes=require("./routes/User");
-Connect()
+const Connect = require("./config/db");
+const userRoutes = require("./routes/User");
+Connect();
 const app = express();
 const server = http.createServer(app);
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(userRoutes);
+app.use(express.static("uploads"));
 
 PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
