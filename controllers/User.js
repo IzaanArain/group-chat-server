@@ -1,5 +1,6 @@
-const User = require("../models/User");
 const bcrypt = require("bcrypt");
+const mongoose=require("mongoose");
+const User=mongoose.model("User");
 
 const register = async (req, res) => {
   try {
@@ -10,14 +11,15 @@ const register = async (req, res) => {
       deviceType,
       deviceToken,
     } = req.body;
+    const emailValidation = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    const passwordValidation =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!typed_email) {
       return res.status(400).send({
         status: 0,
         message: "please enter email",
       });
-    } else if (
-      !typed_email.match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/)
-    ) {
+    } else if (!typed_email.match(emailValidation)) {
       return res.status(400).send({
         status: 0,
         message: "please enter valid email",
@@ -27,11 +29,7 @@ const register = async (req, res) => {
         status: 0,
         message: "please enter password",
       });
-    } else if (
-      !typed_password.match(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
-      )
-    ) {
+    } else if (!typed_password.match(passwordValidation)) {
       return res.status(400).send({
         status: 0,
         message:
@@ -42,11 +40,7 @@ const register = async (req, res) => {
         status: 0,
         message: "please enter confirm password",
       });
-    } else if (
-      !confirmedPassword.match(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
-      )
-    ) {
+    } else if (!confirmedPassword.match(passwordValidation)) {
       return res.status(400).send({
         status: 0,
         message:
@@ -78,7 +72,7 @@ const register = async (req, res) => {
       status: 1,
       message: "user registered succesfully",
       data: {
-        id: user._id,
+        userId: user._id,
       },
     });
   } catch (err) {
@@ -135,14 +129,15 @@ const login = async (req, res) => {
       deviceType,
       deviceToken,
     } = req.body;
+    const emailValidation = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    const passwordValidation =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!typed_email) {
       return res.status(400).send({
         status: 0,
         message: "please enter email",
       });
-    } else if (
-      !typed_email.match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/)
-    ) {
+    } else if (!typed_email.match(emailValidation)) {
       return res.status(400).send({
         status: 0,
         message: "please enter valid email",
@@ -152,11 +147,7 @@ const login = async (req, res) => {
         status: 0,
         message: "please enter password",
       });
-    } else if (
-      !typed_password.match(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
-      )
-    ) {
+    } else if (!typed_password.match(passwordValidation)) {
       return res.status(400).send({
         status: 0,
         message:
@@ -266,22 +257,19 @@ const socialLogin = async (req, res) => {
 
 const resendOtp = async (req, res) => {
   try {
-    const { id } = req.body;
-    const user = await User.findOne({ _id: id });
+    const { userId } = req.body;
+    const user = await User.findOne({ _id: userId });
     if (!user) {
       return res.status(400).send({ status: 0, message: "Invalid User" });
     } else {
       const otp = Math.floor(100000 + Math.random() * 900000);
       user.otp = 123456;
       await user.save();
-      return res
-        .status(200)
-        .send({
-          status: 1,
-          message:
-            "We have resend  OTP verification code at your email address",
-          data: { _id: user._id },
-        });
+      return res.status(200).send({
+        status: 1,
+        message: "We have resend  OTP verification code at your email address",
+        data: { userId: user._id },
+      });
     }
   } catch (err) {
     console.error("Error", err.message);
@@ -298,9 +286,13 @@ const forgetPassword = async (req, res) => {
     const emailValidation = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     const user = await User.findOne({ email: email?.toLowerCase() });
     if (!email) {
-      return res.status(400).send({ status: 0, message: "Email field can't be empty" });
+      return res
+        .status(400)
+        .send({ status: 0, message: "Email field can't be empty" });
     } else if (!email.match(emailValidation)) {
-      return res.status(400).send({ status: 0, message: "Invalid email address" });
+      return res
+        .status(400)
+        .send({ status: 0, message: "Invalid email address" });
     }
     if (!user) {
       return res.status(400).send({ status: 0, message: "User not found" });
@@ -308,10 +300,14 @@ const forgetPassword = async (req, res) => {
       const otp = Math.floor(100000 + Math.random() * 900000);
       user.otp = 123456;
       user.token = null;
-      user.isVerified=0;
+      user.isVerified = 0;
       user.isForget = 1;
       await user.save();
-      return res.status(200).send({ status: 1, message: "OTP verification code has been sent to your email.", data: { _id: user._id } });
+      return res.status(200).send({
+        status: 1,
+        message: "OTP verification code has been sent to your email.",
+        data: { _id: user._id },
+      });
     }
   } catch (err) {
     console.error("Error", err.message);
@@ -324,6 +320,69 @@ const forgetPassword = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
+    const { newPassword, confirmNewPassword, userId } = req.body;
+    const passwordValidation =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!newPassword) {
+      return res
+        .status(400)
+        .send({ status: 0, message: "New Password field can't be empty" });
+    } else if (!newPassword.match(passwordValidation)) {
+      return res.status(400).send({
+        status: 0,
+        message:
+          "Password should be 8 characters long (should contain uppercase, lowercase, numeric and special character)",
+      });
+    } else if (!confirmNewPassword) {
+      return res
+        .status(400)
+        .send({ status: 0, message: "Confirm Password field can't be empty" });
+    } else if (!confirmNewPassword.match(passwordValidation)) {
+      return res.status(400).send({
+        status: 0,
+        message:
+          "Password should be 8 characters long (should contain uppercase, lowercase, numeric and special character)",
+      });
+    } else if (newPassword != confirmNewPassword) {
+      return res.status(400).send({
+        status: 0,
+        message: "New Password and Confirm New Password must be same",
+      });
+    } else {
+      const userCheck = await User.findOne({ _id: userId });
+      if (!userCheck) {
+        return res.status(400).send({ status: 0, message: "User not found" });
+      } else if (userCheck.isVerified === 0) {
+        return res
+          .status(400)
+          .send({ status: 0, message: "Verify your account" });
+      } else {
+        let salt = await bcrypt.genSalt(10);
+        let hashedPassword = await bcrypt.hash(newPassword, salt);
+        const user = await User.findByIdAndUpdate(
+          { _id: userCheck._id },
+          { $set: { password: hashedPassword, isForget: 0 } },
+          { new: true }
+        );
+        res.status(200).send({
+          status: 1,
+          message: "Password changed successfully",
+          data: user,
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Error", err.message);
+    return res.status(500).send({
+      status: 0,
+      message: "Something went wrong",
+    });
+  }
+};
+
+const completeProfile = async (req, res) => {
+  try {
+
   } catch (err) {
     console.error("Error", err.message);
     return res.status(500).send({
@@ -339,5 +398,5 @@ module.exports = {
   socialLogin,
   resendOtp,
   forgetPassword,
-  resetPassword
+  resetPassword,
 };
