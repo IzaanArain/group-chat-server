@@ -382,7 +382,7 @@ const resetPassword = async (req, res) => {
 
 const completeProfile = async (req, res) => {
   try {
-
+    
   } catch (err) {
     console.error("Error", err.message);
     return res.status(500).send({
