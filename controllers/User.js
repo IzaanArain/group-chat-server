@@ -1,6 +1,5 @@
 const bcrypt = require("bcrypt");
 const mongoose=require("mongoose");
-const { use } = require("../routes/User");
 const User=mongoose.model("User");
 // const User = require("../models/User");
 
