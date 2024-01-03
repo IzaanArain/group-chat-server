@@ -493,6 +493,7 @@ const signOut=async (req,res)=>{
     });
   }
 }
+
 module.exports = {
   register,
   otpVerify,
