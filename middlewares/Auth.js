@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
-const User = mongoose.model("User");
-// const User=require("../models/User")
+// const User = mongoose.model("User");
+const User=require("../models/User")
 
 module.exports = (req, res, next) => {
   const authorization = req?.headers?.authorization || req?.headers?.["Authorization"];
@@ -20,13 +20,11 @@ module.exports = (req, res, next) => {
     } else if (user.token !== token) {
       return res.status(401).send({ status: 0, message: "unauthorized" });
     } else if (user.isVerified == 0) {
-      return res
-        .status(400)
-        .send({ status: 0, message: "User is not verified" });
+      return res.status(400).send({ status: 0, message: "User is not verified", user });
     } else if (user.isBlocked == 1) {
-      return res.status(401).send({ status: 0, message: "User is blocked" });
+      return res.status(401).send({ status: 0, message: "User is blocked", user });
     } else if (user.isDeleted == 1) {
-      return res.status(401).send({ status: 0, message: "User is deleted" });
+      return res.status(401).send({ status: 0, message: "User is deleted", user });
     } else if (user.token == token) {
       req.user = user;
       next();
