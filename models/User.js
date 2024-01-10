@@ -149,5 +149,5 @@ userSchema.methods.generateAuthToken=async function (){
   await user.save();
   return token;
 }
-// mongoose.model("User", userSchema);
-module.exports=mongoose.model("User", userSchema);
+mongoose.model("User", userSchema);
+// module.exports=mongoose.model("User", userSchema);

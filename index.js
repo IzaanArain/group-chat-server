@@ -4,7 +4,7 @@ const http = require("http");
 require("dotenv").config();
 const cors = require("cors");
 const userRoutes = require("./routes/User");
-// require("./models")
+require("./models")
 const Connect = require("./config/db");
 Connect();
 const server = http.createServer(app);

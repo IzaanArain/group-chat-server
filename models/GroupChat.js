@@ -29,5 +29,5 @@ const groupChatSchema = mongoose.Schema({
   },
 },{ timestamps: true });
 
-// mongoose.model("groupChat",groupChatSchema)
-module.exports= mongoose.model("groupChat",groupChatSchema)
+mongoose.model("groupChat",groupChatSchema);
+// module.exports= mongoose.model("groupChat",groupChatSchema);
