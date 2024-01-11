@@ -3,9 +3,9 @@ const app = express();
 const http = require("http");
 require("dotenv").config();
 const cors = require("cors");
-const userRoutes = require("./routes/User");
 require("./models")
 const Connect = require("./config/db");
+const userRoutes = require("./routes/User");
 Connect();
 const server = http.createServer(app);
 app.use(
@@ -19,7 +19,7 @@ app.use(userRoutes);
 app.use("/uploads",express.static("uploads"));
 
 PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+server.listen(PORT, (req,res) => {
   console.log(`http://localhost:${PORT}`);
   console.log(`Server running on PORT:${PORT}`);
 });

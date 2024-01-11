@@ -1,7 +1,7 @@
-const bcrypt = require("bcrypt");
-const mongoose=require("mongoose");
-const User=mongoose.model("User");
+const mongoose = require("mongoose");
+const User = mongoose.model("User");
 // const User = require("../models/User");
+const bcrypt = require("bcrypt");
 
 const register = async (req, res) => {
   try {
@@ -400,6 +400,7 @@ const completeProfile = async (req, res) => {
       },
       { new: true }
     );
+    await User.generateAuthToken()
     return res.status(200).send({
       status: 1,
       message: "complete profile successful",
@@ -414,37 +415,77 @@ const completeProfile = async (req, res) => {
   }
 };
 
-const changePassword= async (req,res)=>{
-  try{
-    const userId=req?.user?._id;
+const changePassword = async (req, res) => {
+  try {
+    const userId = req?.user?._id;
     const { existingPassword, confirmNewPassword, newPassword } = req.body;
-    const passwordValidation = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordValidation =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     const userCheck = await User.findOne({ _id: userId });
     const isMatch = await bcrypt.compare(existingPassword, userCheck.password);
     if (!isMatch) {
-      return res.status(400).send({ status: 0, message: "Invalid Current Password" });
+      return res
+        .status(400)
+        .send({ status: 0, message: "Invalid Current Password" });
     } else if (!newPassword) {
-      return res.status(400).send({ status: 0, message: "New Password field can't be empty" });
+      return res
+        .status(400)
+        .send({ status: 0, message: "New Password field can't be empty" });
     } else if (!newPassword.match(passwordValidation)) {
-      return res.status(400).send({ status: 0, message: "Password should be 8 characters long (should contain uppercase, lowercase, numeric and special character)" });
+      return res
+        .status(400)
+        .send({
+          status: 0,
+          message:
+            "Password should be 8 characters long (should contain uppercase, lowercase, numeric and special character)",
+        });
     } else if (!confirmNewPassword) {
-      return res.status(400).send({ status: 0, message: "Confirm New Password field can't be empty" });
+      return res
+        .status(400)
+        .send({
+          status: 0,
+          message: "Confirm New Password field can't be empty",
+        });
     } else if (!confirmNewPassword.match(passwordValidation)) {
-      return res.status(400).send({ status: 0, message: "Password should be 8 characters long (should contain uppercase, lowercase, numeric and special character)" });
+      return res
+        .status(400)
+        .send({
+          status: 0,
+          message:
+            "Password should be 8 characters long (should contain uppercase, lowercase, numeric and special character)",
+        });
     } else if (newPassword !== confirmNewPassword) {
-      return res.status(400).send({ status: 0, message: "New Password and Confirm New Password should be same" });
-    } else if (existingPassword == newPassword || existingPassword == confirmNewPassword) {
-      return res.status(400).send({ status: 0, message: "Current password and new password can't be same" });
+      return res
+        .status(400)
+        .send({
+          status: 0,
+          message: "New Password and Confirm New Password should be same",
+        });
+    } else if (
+      existingPassword == newPassword ||
+      existingPassword == confirmNewPassword
+    ) {
+      return res
+        .status(400)
+        .send({
+          status: 0,
+          message: "Current password and new password can't be same",
+        });
     } else if (!userCheck) {
       return res.status(400).send({ status: 0, message: "User Not Found" });
     } else {
       await userCheck.comparePassword(existingPassword);
       const salt = await bcrypt.genSalt(10);
       const pass = await bcrypt.hash(newPassword, salt);
-      await User.findByIdAndUpdate({ _id: userId }, { $set: { password: pass } });
-      res.status(200).send({ status: 1, message: "Password changed successfully" });
+      await User.findByIdAndUpdate(
+        { _id: userId },
+        { $set: { password: pass } }
+      );
+      res
+        .status(200)
+        .send({ status: 1, message: "Password changed successfully" });
     }
-  }catch(err){
+  } catch (err) {
     console.error("Error", err.message);
     return res.status(500).send({
       status: 0,
@@ -453,16 +494,21 @@ const changePassword= async (req,res)=>{
   }
 };
 
-const deleteProfile=async (req, res)=>{
-  try{
-    const userId=req.user._id;
-    const deleteUser = await User.findByIdAndUpdate({ _id: userId }, { $set: { isDeleted: 1 } });
+const deleteProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const deleteUser = await User.findByIdAndUpdate(
+      { _id: userId },
+      { $set: { isDeleted: 1 } }
+    );
     if (deleteUser) {
-      res.status(200).send({ status: 1, message: "Account deleted successfully" });
+      res
+        .status(200)
+        .send({ status: 1, message: "Account deleted successfully" });
     } else {
       return res.status(400).send({ status: 0, message: "User not found" });
     }
-  }catch(err){
+  } catch (err) {
     console.error("Error", err.message);
     return res.status(500).send({
       status: 0,
@@ -471,9 +517,9 @@ const deleteProfile=async (req, res)=>{
   }
 };
 
-const signOut=async (req,res)=>{
-  try{
-    const userId=req.user._id;
+const signOut = async (req, res) => {
+  try {
+    const userId = req.user._id;
     const user = await User.findOne({ _id: userId });
     if (!user) {
       return res.status(400).send({ status: 0, message: "User not found" });
@@ -484,14 +530,14 @@ const signOut=async (req,res)=>{
       user.save();
       res.status(200).send({ status: 1, message: "Logout successfully" });
     }
-  }catch (err){
+  } catch (err) {
     console.error("Error", err.message);
     return res.status(500).send({
       status: 0,
       message: "Something went wrong",
     });
   }
-}
+};
 
 module.exports = {
   register,

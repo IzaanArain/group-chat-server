@@ -1,4 +1,5 @@
 const express = require("express");
+const router = express.Router();
 const {
   register,
   login,
@@ -14,7 +15,6 @@ const {
 } = require("../controllers/User");
 const userAuth=require("../middlewares/Auth");
 const {upload}=require("../middlewares/Multer");
-const router = express.Router();
 
 router.post("/user/signup", register);
 router.post("/user/signin", login);
