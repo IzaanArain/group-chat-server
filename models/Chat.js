@@ -1,19 +1,22 @@
 const mongoose = require('mongoose');
 
 const chatSchema = new mongoose.Schema({
-    sender_id: {
+    senderId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        require: true
+        require: true,
+        default:null
     },
-    receiver_id: {
+    receiverId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        require: true
+        require: false,
+        default:null
     },
-    group_id: {
-        type: String,
-        require: false
+    groupId: {
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Chat",
+        default:null
     }, 
     message: {
         type: String,
@@ -25,12 +28,12 @@ const chatSchema = new mongoose.Schema({
         require: false,
         default:[]
     },
-    is_read: {
+    isRead: {
         type: Number,
         enum: [0, 1],
         default: 0
     },
-    is_blocked: {
+    isBlocked: {
         type: Number,
         enum: [0, 1],
         default: 0
