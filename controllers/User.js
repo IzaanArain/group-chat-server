@@ -166,12 +166,14 @@ const login = async (req, res) => {
     const isMatch = await bcrypt.compare(typed_password, user.password);
     if (!isMatch) {
       return res.status(400).send({ status: 0, message: "Invalid password" });
+    }else if (user?.isBlocked) {
+      return res.status(400).send({ status: 0, message: "Account blocked" });
     } else if (user?.isDeleted == 1) {
-      return res.status(200).send({ status: 1, message: `Account is deleted` });
+      return res.status(400).send({ status: 1, message: `Account is deleted` });
     } else if (user.isVerified === 0) {
-      return res
-        .status(400)
-        .send({ status: 0, message: "User is Not Verified" });
+      return res.status(400).send({ status: 0, message: "User is Not Verified" });
+    }else if (user.isProfileCompleted === 0) {
+      return res.status(400).send({ status: 0, message: "Profile is not completed", data: user });
     } else {
       await user.generateAuthToken();
       user.deviceType = deviceType;
@@ -226,13 +228,15 @@ const socialLogin = async (req, res) => {
         if (userDeleted === 1) {
           return res.status(200).send({
             status: 0,
-            message: "user account has been deleted",
+            message: "User account has been deleted",
           });
         } else if (user_blocked === 1) {
           return res.status(200).send({
             status: 0,
-            message: "user account has been blocked",
+            message: "User account has been blocked",
           });
+        }else if (user?.isProfileCompleted == 0) {
+          return res.status(400).send({ status: 0, message: "Profile is not completed", data: user });
         } else {
           user.isVerified = 1;
           user.deviceToken = deviceToken;
@@ -383,7 +387,8 @@ const resetPassword = async (req, res) => {
 
 const completeProfile = async (req, res) => {
   try {
-    const userId = req?.user?._id;
+    const userId=req.query._id;
+    // const userId = req?.user?._id;
     const { name, phone, location } = req.body;
     const profileImage = req?.files?.profileImage;
     const profileImagePath = profileImage
