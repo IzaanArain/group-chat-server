@@ -387,9 +387,9 @@ const resetPassword = async (req, res) => {
 
 const completeProfile = async (req, res) => {
   try {
-    const userId=req.query._id;
-    // const userId = req?.user?._id;
-    const { name, phone, location } = req.body;
+    // const userId=req.query._id;
+    const userId = req?.user?._id;
+    const { name, phone, lat, long, address  } = req.body;
     const profileImage = req?.files?.profileImage;
     const profileImagePath = profileImage
       ? profileImage[0]?.path.replace(/\\/g, "/")
@@ -399,12 +399,14 @@ const completeProfile = async (req, res) => {
       {
         name,
         phone,
-        location,
         profileImage: profileImagePath,
         isProfileCompleted: 1,
       },
       { new: true }
     );
+    user.location=[
+      
+    ]
     await User.generateAuthToken()
     return res.status(200).send({
       status: 1,

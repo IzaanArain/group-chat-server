@@ -25,10 +25,23 @@ const userSchema = new Schema(
       default: null,
     },
     location: {
-      type: String,
-      required: false,
-      trim: true,
-      default: null,
+      type: {
+        type: String,
+        enum: ['Point'],
+        required: false,
+        default: 'Point'
+      },
+      address:{
+        type: String,
+        required: false,
+        trim: true,
+        default: null,
+      },
+      coordinates: {
+        type: [Number],
+        required: false,
+        default: [0, 0]
+      },
     },
     socialPhone: {
       type: String,
