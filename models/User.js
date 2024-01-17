@@ -162,5 +162,7 @@ userSchema.methods.generateAuthToken=async function (){
   await user.save();
   return token;
 }
+
+userSchema.index({ location: '2dsphere' });
 mongoose.model("User", userSchema);
 // module.exports=mongoose.model("User", userSchema);

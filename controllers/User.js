@@ -404,10 +404,13 @@ const completeProfile = async (req, res) => {
       },
       { new: true }
     );
-    user.location=[
-      
+    user.location.address=address;
+    user.location.coordinates=[
+      lat ? parseFloat(lat) : 0,
+      long ? parseFloat(long) : 0,
     ]
     await User.generateAuthToken()
+    await User.save();
     return res.status(200).send({
       status: 1,
       message: "complete profile successful",
