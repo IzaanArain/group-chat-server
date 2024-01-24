@@ -8,7 +8,7 @@ const register = async (req, res) => {
     const {
       email: typed_email,
       password: typed_password,
-      confirmedPassword,
+      confirmPassword:confirmedPassword,
       deviceType,
       deviceToken,
     } = req.body;
