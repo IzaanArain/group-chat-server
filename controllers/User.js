@@ -390,7 +390,6 @@ const completeProfile = async (req, res) => {
     // const userId=req.query._id;
     const userId = req?.body?._id;
     const { name, phone, lat, long, address  } = req.body;
-    console.log(req.body)
     const profileImage = req?.files?.profileImage;
     const profileImagePath = profileImage
       ? profileImage[0]?.path.replace(/\\/g, "/")
