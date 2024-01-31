@@ -23,7 +23,7 @@ router.post("/user/socialLogin", socialLogin);
 router.post("/user/resendOtp", resendOtp);
 router.post("/user/forgetPassword", forgetPassword);
 router.post("/user/resetPassword", resetPassword);
-router.post("/user/completeProfile", userAuth, upload.fields([{name:"profileImage"}]), completeProfile);
+router.post("/user/completeProfile", upload.fields([{name:"profileImage"}]), completeProfile);
 router.post("/user/changePassword", userAuth, changePassword);
 router.post("/user/deleteProfile", userAuth, deleteProfile);
 router.post("/user/signOut", userAuth, signOut);

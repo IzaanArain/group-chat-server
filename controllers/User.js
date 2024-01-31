@@ -388,8 +388,9 @@ const resetPassword = async (req, res) => {
 const completeProfile = async (req, res) => {
   try {
     // const userId=req.query._id;
-    const userId = req?.user?._id;
+    const userId = req?.body?._id;
     const { name, phone, lat, long, address  } = req.body;
+    console.log(req.body)
     const profileImage = req?.files?.profileImage;
     const profileImagePath = profileImage
       ? profileImage[0]?.path.replace(/\\/g, "/")
@@ -409,8 +410,8 @@ const completeProfile = async (req, res) => {
       lat ? parseFloat(lat) : 0,
       long ? parseFloat(long) : 0,
     ]
-    await User.generateAuthToken()
-    await User.save();
+    await user.generateAuthToken()
+    await user.save();
     return res.status(200).send({
       status: 1,
       message: "complete profile successful",
@@ -421,6 +422,7 @@ const completeProfile = async (req, res) => {
     return res.status(500).send({
       status: 0,
       message: "Something went wrong",
+      err:err.message
     });
   }
 };
