@@ -171,7 +171,7 @@ const login = async (req, res) => {
     } else if (user?.isDeleted == 1) {
       return res.status(400).send({ status: 1, message: `Account is deleted` });
     } else if (user.isVerified === 0) {
-      return res.status(400).send({ status: 0, message: "User is Not Verified" });
+      return res.status(400).send({ status: 0, message: "User is Not Verified", data: user });
     }else if (user.isProfileCompleted === 0) {
       return res.status(400).send({ status: 0, message: "Profile is not completed", data: user });
     } else {
@@ -421,9 +421,44 @@ const completeProfile = async (req, res) => {
     return res.status(500).send({
       status: 0,
       message: "Something went wrong",
-      err:err.message
     });
   }
+};
+
+const editProfile= async (req,res) =>{
+try{
+  const userId = req?.user?._id;
+  const { name, phone, lat, long, address  } = req.body;
+  const profileImagePath = req?.files?.profileImage > 0 ? req.files?.profileImage[0].path : req?.user?.profileImage;
+  const updatedUser = await User.findOneAndUpdate(
+    {_id:userId},
+    {
+      name,
+      phone,
+      profileImage: profileImagePath,
+      location:{
+        address:address,
+        coordinates:[
+          long,
+          lat
+        ]
+      }
+    },
+    { new: true }
+  );
+  return res.status(200).send({
+    status:1,
+    message:"Profile Updated successfully",
+    data:updatedUser
+  });
+  
+}catch(err){
+  console.error("Error", err.message);
+  return res.status(500).send({
+    status: 0,
+    message: "Something went wrong",
+  });
+}
 };
 
 const changePassword = async (req, res) => {
@@ -559,6 +594,7 @@ module.exports = {
   forgetPassword,
   resetPassword,
   completeProfile,
+  editProfile,
   changePassword,
   deleteProfile,
   signOut,
