@@ -436,13 +436,13 @@ try{
       name,
       phone,
       profileImage: profileImagePath,
-      location:{
-        address:address,
-        coordinates:[
-          long,
-          lat
-        ]
-      }
+      // location:{
+      //   address:address,
+      //   coordinates:[
+      //     long ? long : 0,
+      //     lat ? lat : 0
+      //   ]
+      // }
     },
     { new: true }
   );
@@ -457,6 +457,7 @@ try{
   return res.status(500).send({
     status: 0,
     message: "Something went wrong",
+    err:err.message
   });
 }
 };
