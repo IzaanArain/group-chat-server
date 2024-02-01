@@ -394,10 +394,9 @@ const completeProfile = async (req, res) => {
     // const userId = req?.body?._id;
     const userId = req.user._id;
     const { name, phone, lat, long, address  } = req.body;
-    // console.log(req.files?.profileImage)
-    // const profileImagePath = req?.files?.profileImage > 0 ? req.files?.profileImage[0].path : req?.user?.profileImage;
-    const profileImage = req?.files?.profileImage;
-    const profileImagePath = profileImage ? profileImage[0]?.path.replace(/\\/g, "/") : null;
+    const profileImagePath = req?.files?.profileImage.length >=1 ? req.files?.profileImage[0].path : req?.user?.profileImage;
+    // const profileImage = req?.files?.profileImage;
+    // const profileImagePath = profileImage ? profileImage[0]?.path.replace(/\\/g, "/") : null;
     const user = await User.findByIdAndUpdate(
       userId,
       {
