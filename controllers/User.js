@@ -394,7 +394,7 @@ const completeProfile = async (req, res) => {
     // const userId = req?.body?._id;
     const userId = req.user._id;
     const { name, phone, lat, long, address  } = req.body;
-    const profileImagePath = req?.files?.profileImage.length >=1 ? req.files?.profileImage[0].path : req?.user?.profileImage;
+    const profileImagePath = req?.files?.profileImage?.length >=1 ? req.files?.profileImage[0].path : req?.user?.profileImage;
     // const profileImage = req?.files?.profileImage;
     // const profileImagePath = profileImage ? profileImage[0]?.path.replace(/\\/g, "/") : null;
     const user = await User.findByIdAndUpdate(
@@ -424,6 +424,7 @@ const completeProfile = async (req, res) => {
     return res.status(500).send({
       status: 0,
       message: "Something went wrong",
+      err:err.message
     });
   }
 };
