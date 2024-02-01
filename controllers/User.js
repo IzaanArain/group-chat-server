@@ -172,9 +172,11 @@ const login = async (req, res) => {
       return res.status(400).send({ status: 1, message: `Account is deleted` });
     } else if (user.isVerified === 0) {
       return res.status(400).send({ status: 0, message: "User is Not Verified", data: user });
-    }else if (user.isProfileCompleted === 0) {
-      return res.status(400).send({ status: 0, message: "Profile is not completed", data: user });
-    } else {
+    }
+    // else if (user.isProfileCompleted === 0) {
+    //   return res.status(400).send({ status: 0, message: "Profile is not completed", data: user });
+    // } 
+    else {
       await user.generateAuthToken();
       user.deviceType = deviceType;
       user.deviceToken = deviceToken;
@@ -235,9 +237,11 @@ const socialLogin = async (req, res) => {
             status: 0,
             message: "User account has been blocked",
           });
-        }else if (user?.isProfileCompleted == 0) {
-          return res.status(400).send({ status: 0, message: "Profile is not completed", data: user });
-        } else {
+        }
+        // else if (user?.isProfileCompleted == 0) {
+        //   return res.status(400).send({ status: 0, message: "Profile is not completed", data: user });
+        // } 
+        else {
           user.isVerified = 1;
           user.deviceToken = deviceToken;
           user.deviceType = deviceType;
@@ -387,29 +391,29 @@ const resetPassword = async (req, res) => {
 
 const completeProfile = async (req, res) => {
   try {
-    // const userId=req.query._id;
-    const userId = req?.body?._id;
+    // const userId = req?.body?._id;
+    const userId = req.user._id;
     const { name, phone, lat, long, address  } = req.body;
+    // console.log(req.files?.profileImage)
+    // const profileImagePath = req?.files?.profileImage > 0 ? req.files?.profileImage[0].path : req?.user?.profileImage;
     const profileImage = req?.files?.profileImage;
-    const profileImagePath = profileImage
-      ? profileImage[0]?.path.replace(/\\/g, "/")
-      : null;
+    const profileImagePath = profileImage ? profileImage[0]?.path.replace(/\\/g, "/") : null;
     const user = await User.findByIdAndUpdate(
       userId,
       {
-        name,
-        phone,
-        profileImage: profileImagePath,
+        name : name ? name : req.user.name,
+        phone : phone ? phone : req.user.phone,
+        profileImage : profileImagePath ? profileImagePath : req.user.profileImage,
         isProfileCompleted: 1,
       },
       { new: true }
     );
-    user.location.address=address;
+    user.location.address=address ? address : req.user.address;
     user.location.coordinates=[
-      lat ? parseFloat(lat) : 0,
-      long ? parseFloat(long) : 0,
-    ]
-    await user.generateAuthToken()
+      long ? parseFloat(long) : req.user.location.coordinates[0],
+      lat ? parseFloat(lat) : req.user.location.coordinates[1],
+    ];
+    // await user.generateAuthToken()
     await user.save();
     return res.status(200).send({
       status: 1,
@@ -426,40 +430,42 @@ const completeProfile = async (req, res) => {
 };
 
 const editProfile= async (req,res) =>{
-try{
-  const userId = req?.user?._id;
-  const { name, phone, lat, long, address  } = req.body;
-  const profileImagePath = req?.files?.profileImage > 0 ? req.files?.profileImage[0].path : req?.user?.profileImage;
-  const updatedUser = await User.findOneAndUpdate(
-    {_id:userId},
-    {
-      name,
-      phone,
-      profileImage: profileImagePath,
-      // location:{
-      //   address:address,
-      //   coordinates:[
-      //     long ? long : 0,
-      //     lat ? lat : 0
-      //   ]
-      // }
-    },
-    { new: true }
-  );
-  return res.status(200).send({
-    status:1,
-    message:"Profile Updated successfully",
-    data:updatedUser
-  });
-  
-}catch(err){
-  console.error("Error", err.message);
-  return res.status(500).send({
-    status: 0,
-    message: "Something went wrong",
-    err:err.message
-  });
-}
+  try {
+    // const userId = req?.body?._id;
+    const userId = req.user._id;
+    const { name, phone, lat, long, address  } = req.body;
+    const profileImagePath = req?.files?.profileImage > 0 ? req.files?.profileImage[0].path : req?.user?.profileImage;
+    // const profileImage = req?.files?.profileImage;
+    // const profileImagePath = profileImage ? profileImage[0]?.path.replace(/\\/g, "/") : null;
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        name : name ? name : req.user.name,
+        phone : phone ? phone : req.user.phone,
+        profileImage : profileImagePath ? profileImagePath : req.user.profileImage,
+        isProfileCompleted: 1,
+      },
+      { new: true }
+    );
+    user.location.address=address ? address : req.user.address;
+    user.location.coordinates=[
+      long ? parseFloat(long) : req.user.location.coordinates[0],
+      lat ? parseFloat(lat) : req.user.location.coordinates[1],
+    ];
+    await user.generateAuthToken()
+    await user.save();
+    return res.status(200).send({
+      status: 1,
+      message: "complete profile successful",
+      data: user,
+    });
+  } catch (err) {
+    console.error("Error", err.message);
+    return res.status(500).send({
+      status: 0,
+      message: "Something went wrong",
+    });
+  }
 };
 
 const changePassword = async (req, res) => {
