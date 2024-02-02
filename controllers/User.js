@@ -169,9 +169,9 @@ const login = async (req, res) => {
     }else if (user?.isBlocked) {
       return res.status(400).send({ status: 0, message: "Account blocked" });
     } else if (user?.isDeleted == 1) {
-      return res.status(400).send({ status: 1, message: `Account is deleted` });
+      return res.status(200).send({ status: 1, message: `Account is deleted` ,data:user});
     } else if (user.isVerified === 0) {
-      return res.status(400).send({ status: 0, message: "User is Not Verified", data: user });
+      return res.status(200).send({ status: 1, message: "User is Not Verified", data: user });
     }
     // else if (user.isProfileCompleted === 0) {
     //   return res.status(400).send({ status: 0, message: "Profile is not completed", data: user });
@@ -229,12 +229,12 @@ const socialLogin = async (req, res) => {
         const user_blocked = user?.isBlocked;
         if (userDeleted === 1) {
           return res.status(200).send({
-            status: 0,
+            status: 1,
             message: "User account has been deleted",
           });
         } else if (user_blocked === 1) {
           return res.status(200).send({
-            status: 0,
+            status: 1,
             message: "User account has been blocked",
           });
         }
@@ -408,11 +408,11 @@ const completeProfile = async (req, res) => {
       { new: true }
     );
     user.location.address=address ? address : req.user.address;
-    user.location.coordinates=[
+    user.location.coordinates = [
       long ? parseFloat(long) : req.user.location.coordinates[0],
       lat ? parseFloat(lat) : req.user.location.coordinates[1],
     ];
-    // await user.generateAuthToken()
+    // await user.generateAuthToken();
     await user.save();
     return res.status(200).send({
       status: 1,
