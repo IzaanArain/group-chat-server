@@ -4,7 +4,7 @@ const Connect = async () => {
   try {
     const conn = await mongoose.connect(process.env.CONNECTION_STRING);
     console.log(
-      `database connected at : ${conn.connection.host}/${conn.connection.name}`
+      `database connected at : ${conn.connection.host}/${conn.connection.name}`.cyan
     );
   } catch (err) {
     console.error("Error", err.message);

@@ -3,6 +3,7 @@ const app = express();
 const http = require("http");
 require("dotenv").config();
 const cors = require("cors");
+const colors=require("colors")
 require("./models")
 const Connect = require("./config/db");
 const userRoutes = require("./routes/User");
