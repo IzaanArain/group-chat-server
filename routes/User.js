@@ -32,4 +32,6 @@ router.post("/user/deleteProfile", userAuth, deleteProfile);
 router.post("/user/signOut", userAuth, signOut);
 // user routes
 router.get("/user/allUsers", userAuth, getAllUsers);
+// chat routes
+
 module.exports = router;
