@@ -1,44 +1,37 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const chatSchema = new mongoose.Schema({
-    senderId: {
+const chatSchema = mongoose.Schema(
+  {
+    chatName: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    isGroupChat: {
+      type: Number,
+      enum: [0, 1],
+      default: 0,
+    },
+    groupMember: [
+      {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        require: true,
-        default:null
+        default: null,
+      },
+    ],
+    latestMessage: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "chat",
+      default: null,
     },
-    receiverId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        require: false,
-        default:null
+    groupAdmin: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
     },
-    groupId: {
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Chat",
-        default:null
-    }, 
-    message: {
-        type: String,
-        require: false,
-        default:null
-    },
-    file: {
-        type: Array, 
-        require: false,
-        default:[]
-    },
-    isRead: {
-        type: Number,
-        enum: [0, 1],
-        default: 0
-    },
-    isBlocked: {
-        type: Number,
-        enum: [0, 1],
-        default: 0
-    },
-}, { timestamps: true });
+  },
+  { timestamps: true }
+);
 
-mongoose.model('Chat',chatSchema);
-// module.exports=mongoose.model('Chat',chatSchema);
+mongoose.model("chat", chatSchema);
+// module.exports= mongoose.model("groupChat",groupChatSchema);
