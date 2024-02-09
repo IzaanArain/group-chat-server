@@ -12,7 +12,7 @@ const chatSchema = mongoose.Schema(
       enum: [0, 1],
       default: 0,
     },
-    groupMember: [
+    users: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
