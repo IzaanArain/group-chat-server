@@ -17,7 +17,7 @@ const {
 const userAuth=require("../middlewares/Auth");
 const {upload}=require("../middlewares/Multer");
 const { getAllUsers } = require("../controllers/userController");
-const { getChat, accessChat } = require("../controllers/chatControllers");
+const { getChat, accessChat, fetchChats, createGroupChat } = require("../controllers/chatControllers");
 // common routes
 router.post("/user/signup", register);
 router.post("/user/signin", login);          
@@ -34,5 +34,7 @@ router.post("/user/signOut", userAuth, signOut);
 // user routes
 router.get("/user/allUsers", userAuth, getAllUsers);
 // chat routes
-router.post("/user/accessChat", userAuth, accessChat)
+router.post("/user/accessChat", userAuth, accessChat);
+router.get("/user/fetchChat", userAuth, fetchChats);
+router.post("/user/createGroup", userAuth, createGroupChat);
 module.exports = router;

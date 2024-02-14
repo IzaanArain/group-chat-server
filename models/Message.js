@@ -18,7 +18,7 @@ const messageSchema = new mongoose.Schema({
         ref:"Chat",
         default:null
     }, 
-    message: {
+    content: {
         type: String,
         require: false,
         default:null
@@ -39,11 +39,6 @@ const messageSchema = new mongoose.Schema({
         require: false,
         default:null
     }],
-    isBlocked: {
-        type: Number,
-        enum: [0, 1],
-        default: 0
-    },
 }, { timestamps: true });
 
 mongoose.model('message',messageSchema);
