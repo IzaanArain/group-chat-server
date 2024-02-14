@@ -169,7 +169,7 @@ const login = async (req, res) => {
     }else if (user?.isBlocked) {
       return res.status(400).send({ status: 0, message: "Account blocked" });
     } else if (user?.isDeleted == 1) {
-      return res.status(200).send({ status: 1, message: `Account is deleted` ,data:user});
+      return res.status(400).send({ status: 0, message: `Account is deleted`});//,data:user
     } else if (user.isVerified === 0) {
       return res.status(200).send({ status: 1, message: "User is Not Verified", data: user });
     }
