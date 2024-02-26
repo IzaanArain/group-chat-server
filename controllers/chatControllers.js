@@ -5,7 +5,7 @@ const User = mongoose.model("User");
 //@description     Create or fetch One to One Chat
 //@route           POST /api/chat/
 //@access          Protected
-exports.accessChat = async (req, res) => {
+exports.initiateChat = async (req, res) => {
   try {
     const userId = req.user._id;
     const { receiverId } = req.body;
@@ -41,12 +41,13 @@ exports.accessChat = async (req, res) => {
         data:isChat
       });
     }else{
-        const chatData=new Chat({
-            chatName:"sender",
+        const chatData=new GroupChat({
+            // groupName:"sender",
             isGroupChat:false,
             users:[userId,receiverId],
         });
-        await chatData.save().populate("users", "name email profileImage")//-password
+        await chatData.save()
+        await chatData.populate("users", "name email profileImage")//-password
         return res.status(200).send({
             status:1,
             message:"successful",
@@ -63,7 +64,7 @@ exports.accessChat = async (req, res) => {
   }
 };
 
-//@description     Fetch all chats for a user
+//@description     Fetching all chats for a user
 //@route           GET /api/chat/
 //@access          Protected
 exports.fetchChats = async (req, res) => {
@@ -87,7 +88,7 @@ exports.fetchChats = async (req, res) => {
     .populate("users","name email profileImage")
     .populate("groupAdmin","name email profileImage")
     .populate("latestMessage")
-    .sort({updatedAt:-1})
+    .sort({createdAt:-1}) // updatedAt
     .populate("latestMessage.sender","name email profileImage")
     // .then(async(results)=>{
     //   results=await User.populate(results,{
@@ -123,7 +124,8 @@ exports.fetchChats = async (req, res) => {
 exports.createGroupChat = async(req,res)=>{
   try{
     const usersJson = req.body.users;
-    const chatName = req.body.name;
+    const groupName = req.body.name;
+    console.log(req.body)
     // if(!req.body.users || !req.body.name){
     //   return res.status(400).send({
     //     status:0,
@@ -131,12 +133,12 @@ exports.createGroupChat = async(req,res)=>{
     //   })
     // }
     if
-    (!chatName){
+    (!groupName){
         return res.status(400).send({
         status:0,
         message:"Please enter group name"
       })
-    }else if(usersJson){
+    }else if(!usersJson){
         return res.status(400).send({
         status:0,
         message:"Please enter group users"
@@ -151,7 +153,7 @@ exports.createGroupChat = async(req,res)=>{
     }
     users.push(req?.user)
     const groupChat = await GroupChat.create({
-      chatName: chatName,
+      groupName: groupName,
       users,
       isGroupChat: true,
       groupAdmin: req?.user,
@@ -171,6 +173,35 @@ exports.createGroupChat = async(req,res)=>{
         message:"Chat not found",
       })
     }
+  }catch(err){
+    return res.status(500).send({
+      status: 0,
+      message: "Something went wrong",
+      err: err.message,
+    });
+  }
+}
+
+exports.renameGroup =async (req,res)=>{
+  try{
+    const {groupId,name}=req.body;
+    if (!groupId) {
+      return res.status(400).send({
+        status: 0,
+        message: "Receiver ID is required!",
+      });
+    }else if(!mongoose.isValidObjectId(groupId)){
+        return res.status(400).send({
+            status: 0,
+            message: "Not a valid ID!",
+          });
+    }else if(!name){
+      return res.status(400).send({
+        status: 0,
+        message: "Name is required!",
+      });
+    }
+    
   }catch(err){
     return res.status(500).send({
       status: 0,

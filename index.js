@@ -4,6 +4,7 @@ const http = require("http");
 require("dotenv").config();
 const cors = require("cors");
 const colors=require("colors")
+var bodyParser = require('body-parser')
 require("./models")
 const Connect = require("./config/db");
 const userRoutes = require("./routes/User");
@@ -16,6 +17,10 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+// parse application/json
+app.use(bodyParser.json())
 app.use(userRoutes);
 app.use("/uploads",express.static("uploads"));
 
