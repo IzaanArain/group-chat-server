@@ -1,4 +1,4 @@
 require('./User');
-require("./Message");
 require("./Chat");
+require("./GroupChat");
 require("./GroupMembers")

@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Chat = mongoose.model("chat");
+const GroupChat = mongoose.model("groupChat");
 const User = mongoose.model("User");
 
 //@description     Create or fetch One to One Chat
@@ -20,7 +20,7 @@ exports.accessChat = async (req, res) => {
             message: "Not a valid ID!",
           });
     }
-    let isChat = await Chat.findOne({ // find()
+    let isChat = await GroupChat.findOne({ // find()
       isGroupChat: false,
       $and: [
         { users: { $elemMatch: { $eq: userId } } },
@@ -83,7 +83,7 @@ exports.fetchChats = async (req, res) => {
       //   data:[]
       // })
     // })
-   const result = await Chat.find({users:{$elemMatch:{$eq:userId}}})
+   const result = await GroupChat.find({users:{$elemMatch:{$eq:userId}}})
     .populate("users","name email profileImage")
     .populate("groupAdmin","name email profileImage")
     .populate("latestMessage")
@@ -150,13 +150,13 @@ exports.createGroupChat = async(req,res)=>{
       });
     }
     users.push(req?.user)
-    const groupChat = await Chat.create({
+    const groupChat = await GroupChat.create({
       chatName: chatName,
       users,
       isGroupChat: true,
       groupAdmin: req?.user,
     })
-    const fullGroupChat = await Chat.findOne({ _id: groupChat._id })
+    const fullGroupChat = await GroupChat.findOne({ _id: groupChat._id })
       .populate("users", "name email profileImage")
       .populate("groupAdmin", "name email profileImage");
     if(fullGroupChat){
