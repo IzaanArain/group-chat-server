@@ -14,45 +14,47 @@ exports.initiateChat = async (req, res) => {
         status: 0,
         message: "Receiver ID is required!",
       });
-    }else if(!mongoose.isValidObjectId(receiverId)){
-        return res.status(400).send({
-            status: 0,
-            message: "Not a valid ID!",
-          });
+    } else if (!mongoose.isValidObjectId(receiverId)) {
+      return res.status(400).send({
+        status: 0,
+        message: "Not a valid ID!",
+      });
     }
-    let isChat = await GroupChat.findOne({ // find()
+    let isChat = await GroupChat.findOne({
+      // find()
       isGroupChat: false,
       $and: [
         { users: { $elemMatch: { $eq: userId } } },
         { users: { $elemMatch: { $eq: receiverId } } },
       ],
     })
-      .populate("users","name email profileImage")//-password
+      .populate("users", "name email profileImage") //-password
       .populate("latestMessage")
-      .populate("latestMessage.senderId","name email profileImage")
+      .populate("latestMessage.senderId", "name email profileImage");
     // isChat = await User.populate(isChat, {
     //   path: "latestMessage.senderId",
     //   select: "name email profileImage",
     // });
-    if (isChat) { //isChat.length > 0
+    if (isChat) {
+      //isChat.length > 0
       res.send({
-        status:1,
-        message:"Successful",
-        data:isChat
+        status: 1,
+        message: "Successful",
+        data: isChat,
       });
-    }else{
-        const chatData=new GroupChat({
-            // groupName:"sender",
-            isGroupChat:false,
-            users:[userId,receiverId],
-        });
-        await chatData.save()
-        await chatData.populate("users", "name email profileImage")//-password
-        return res.status(200).send({
-            status:1,
-            message:"successful",
-            data:chatData
-        })
+    } else {
+      const chatData = new GroupChat({
+        // groupName:"sender",
+        isGroupChat: 0,
+        users: [userId, receiverId],
+      });
+      await chatData.save();
+      await chatData.populate("users", "name email profileImage"); //-password
+      return res.status(200).send({
+        status: 1,
+        message: "successful",
+        data: chatData,
+      });
     }
   } catch (err) {
     console.error("Error", err.message);
@@ -68,8 +70,8 @@ exports.initiateChat = async (req, res) => {
 //@route           GET /api/chat/
 //@access          Protected
 exports.fetchChats = async (req, res) => {
-  try{
-    const userId=req.user._id;
+  try {
+    const userId = req.user._id;
     // Chat.find({users:{$elemMatch:{$eq:userId}}})
     // .then((result)=>{
     //   return res.status(200).send({
@@ -78,38 +80,40 @@ exports.fetchChats = async (req, res) => {
     //     data:result
     //   })
     // }).catch((err)=>{
-      // return res.status(200).send({
-      //   status:1,
-      //   message:"Chat not found",
-      //   data:[]
-      // })
+    // return res.status(200).send({
+    //   status:1,
+    //   message:"Chat not found",
+    //   data:[]
     // })
-   const result = await GroupChat.find({users:{$elemMatch:{$eq:userId}}})
-    .populate("users","name email profileImage")
-    .populate("groupAdmin","name email profileImage")
-    .populate("latestMessage")
-    .sort({createdAt:-1}) // updatedAt
-    .populate("latestMessage.sender","name email profileImage")
+    // })
+    const result = await GroupChat.find({
+      users: { $elemMatch: { $eq: userId } },
+    })
+      .populate("users", "name email profileImage")
+      .populate("groupAdmin", "name email profileImage")
+      .populate("latestMessage")
+      .sort({ createdAt: -1 }) // updatedAt
+      .populate("latestMessage.sender", "name email profileImage");
     // .then(async(results)=>{
     //   results=await User.populate(results,{
     //     path:"latestMessage.sender",
     //     select:"name email profileImage"
     //   })
     // })
-      if(result){
-        return res.status(200).send({
-        status:1,
-        message:"fetched user chats successfully",
-        data:result
-      })
-      }else{
-       return res.status(200).send({
-        status:1,
-        message:"Chats not found",
-        data:[]
-      }) 
-      }
-  }catch(err){
+    if (result) {
+      return res.status(200).send({
+        status: 1,
+        message: "fetched user chats successfully",
+        data: result,
+      });
+    } else {
+      return res.status(200).send({
+        status: 1,
+        message: "Chats not found",
+        data: [],
+      });
+    }
+  } catch (err) {
     return res.status(500).send({
       status: 0,
       message: "Something went wrong",
@@ -121,92 +125,211 @@ exports.fetchChats = async (req, res) => {
 //@description     Create New Group Chat
 //@route           POST /api/chat/group
 //@access          Protected
-exports.createGroupChat = async(req,res)=>{
-  try{
+exports.createGroupChat = async (req, res) => {
+  try {
     const usersJson = req.body.users;
     const groupName = req.body.name;
-    console.log(req.body)
     // if(!req.body.users || !req.body.name){
     //   return res.status(400).send({
     //     status:0,
     //     message:"Please fill all the feilds"
     //   })
     // }
-    if
-    (!groupName){
-        return res.status(400).send({
-        status:0,
-        message:"Please enter group name"
-      })
-    }else if(!usersJson){
-        return res.status(400).send({
-        status:0,
-        message:"Please enter group users"
-      })
+    if (!groupName) {
+      return res.status(400).send({
+        status: 0,
+        message: "Please enter group name",
+      });
+    } else if (!usersJson) {
+      return res.status(400).send({
+        status: 0,
+        message: "Please enter group users",
+      });
     }
-    const users=JSON.parse(usersJson);
+    const users = JSON.parse(usersJson);
     if (users.length < 2) {
       return res.status(400).send({
         status: 0,
         message: "More than 2 users are required to form a group chat",
       });
     }
-    users.push(req?.user)
+    users.push(req?.user._id.toString());
     const groupChat = await GroupChat.create({
       groupName: groupName,
       users,
-      isGroupChat: true,
-      groupAdmin: req?.user,
-    })
+      isGroupChat: 1,
+      groupAdmin: req?.user._id,
+    });
     const fullGroupChat = await GroupChat.findOne({ _id: groupChat._id })
       .populate("users", "name email profileImage")
       .populate("groupAdmin", "name email profileImage");
-    if(fullGroupChat){
+    if (fullGroupChat) {
       return res.status(200).send({
-        status:1,
-        message:"Chat fetched successfully",
-        data:fullGroupChat
-      })
-    }else{
+        status: 1,
+        message: "Chat fetched successfully",
+        data: fullGroupChat,
+      });
+    } else {
       return res.status(400).send({
-        status:0,
-        message:"Chat not found",
-      })
+        status: 0,
+        message: "Chat not found",
+      });
     }
-  }catch(err){
+  } catch (err) {
     return res.status(500).send({
       status: 0,
       message: "Something went wrong",
       err: err.message,
     });
   }
-}
+};
 
-exports.renameGroup =async (req,res)=>{
-  try{
-    const {groupId,name}=req.body;
+exports.renameGroup = async (req, res) => {
+  try {
+    const { groupId, name } = req.body;
     if (!groupId) {
       return res.status(400).send({
         status: 0,
         message: "Receiver ID is required!",
       });
-    }else if(!mongoose.isValidObjectId(groupId)){
-        return res.status(400).send({
-            status: 0,
-            message: "Not a valid ID!",
-          });
-    }else if(!name){
+    } else if (!mongoose.isValidObjectId(groupId)) {
+      return res.status(400).send({
+        status: 0,
+        message: "Not a valid ID!",
+      });
+    } else if (!name) {
       return res.status(400).send({
         status: 0,
         message: "Name is required!",
       });
     }
-    
-  }catch(err){
+    const isGroupChat = await GroupChat.findOne({ _id: groupId });
+    if (isGroupChat.isGroupChat === 1) {
+      const updateGroupName = await GroupChat.findByIdAndUpdate(
+        groupId,
+        {
+          groupName: name,
+        },
+        { new: true }
+      )
+        .populate("users", "name email profileImage")
+        .populate("groupAdmin", "name email profileImage");
+      if (updateGroupName) {
+        return res.status(200).send({
+          status: 1,
+          message: "Group renamed successfully",
+          data: updateGroupName,
+        });
+      } else {
+        return res.status(400).send({
+          status: 0,
+          message: "Failed to rename group, please try again",
+        });
+      }
+    } else {
+      return res.status(400).send({
+        status: 0,
+        message: "Not a group chat",
+      });
+    }
+  } catch (err) {
     return res.status(500).send({
       status: 0,
       message: "Something went wrong",
       err: err.message,
     });
   }
-}
+};
+
+exports.addToGroup = async (req, res) => {
+  try {
+    const groupId = req.body.groupId;
+    const usersJson = req.body.users;
+    const userIds = JSON.parse(usersJson);
+    if (!groupId) {
+      return res.status(400).send({
+        status: 0,
+        message: "Receiver ID is required!",
+      });
+    } else if (!mongoose.isValidObjectId(groupId)) {
+      return res.status(400).send({
+        status: 0,
+        message: "Not a valid ID",
+      });
+    }
+    if (usersJson && userIds.length > 0) {
+      const newMemmbers = await GroupChat.findOneAndUpdate(
+        { _id: groupId },
+        // { $push: { users: userIds.map((id) => id) } },
+        { $push: { users: { $each: userIds } } },
+        { new: true }
+      )
+        .populate("users", "name email profileImage")
+        .populate("groupAdmin", "name email profileImage");
+      if (!newMemmbers) {
+        return res.status(400).send({
+          status: 0,
+          message: "Group does not exist",
+        });
+      } else {
+        return res.status(400).send({
+          status: 0,
+          message: "Group members added successfully",
+          data: newMemmbers,
+        });
+      }
+    }
+  } catch (err) {
+    return res.status(500).send({
+      status: 0,
+      message: "Something went wrong",
+      err: err.message,
+    });
+  }
+};
+
+exports.removeFromGroup = async (req, res) => {
+  try {
+    const groupId = req.query.groupId;
+    const usersJson = req.query.users;
+    const userIds = JSON.parse(usersJson);
+    if (!groupId) {
+      return res.status(400).send({
+        status: 0,
+        message: "Receiver ID is required!",
+      });
+    } else if (!mongoose.isValidObjectId(groupId)) {
+      return res.status(400).send({
+        status: 0,
+        message: "Not a valid ID",
+      });
+    }
+    if (usersJson && userIds.length > 0) {
+      const newMemmbers = await GroupChat.findOneAndUpdate(
+        { _id: groupId },
+        {$pull:{users:{$in:userIds}}},
+        { new: true }
+      )
+        .populate("users", "name email profileImage")
+        .populate("groupAdmin", "name email profileImage");
+      if (!newMemmbers) {
+        return res.status(400).send({
+          status: 0,
+          message: "Group does not exist",
+        });
+      } else {
+        return res.status(400).send({
+          status: 0,
+          message: "Group members removed successfully",
+          data: newMemmbers,
+        });
+      }
+    }
+  } catch (err) {
+    return res.status(500).send({
+      status: 0,
+      message: "Something went wrong",
+      err: err.message,
+    });
+  }
+};
