@@ -5,6 +5,9 @@ const storage = multer.diskStorage({
     if (file.fieldname === "profileImage") {
       cb(null, "./uploads/profileImages/");
     }
+    else if(file.fieldname === "groupImage"){
+      cb(null, "./uploads/profileImages/");
+    }
   },
   filename: function (req, file, cb) {
     const uniqueAffix = Date.now() + "-" + Math.round(Math.random() * 1e9);

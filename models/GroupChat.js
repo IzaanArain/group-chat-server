@@ -7,6 +7,16 @@ const groupChatSchema = mongoose.Schema(
       trim: true,
       default: null,
     },
+    groupDescription:{
+      type: String,
+      trim: true,
+      default: null,
+    },
+    groupImage:{
+      type: String,
+      trim: true,
+      default: null,
+    },
     isGroupChat: {
       type: Number,
       enum: [0, 1],

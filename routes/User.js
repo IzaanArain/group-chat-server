@@ -17,7 +17,7 @@ const {
 const userAuth=require("../middlewares/Auth");
 const {upload}=require("../middlewares/Multer");
 const { getAllUsers } = require("../controllers/userController");
-const { initiateChat, fetchChats, createGroupChat, renameGroup, addToGroup, removeFromGroup } = require("../controllers/chatControllers");
+const { initiateChat, fetchChats, createGroupChat, editGroup, addToGroup, removeFromGroup, leaveGroup } = require("../controllers/chatControllers");
 // common routes
 router.post("/user/signup", register);
 router.post("/user/signin", login);          
@@ -36,8 +36,9 @@ router.get("/user/allUsers", userAuth, getAllUsers);
 // chat routes
 router.post("/user/initiateChat", userAuth, initiateChat);
 router.get("/user/fetchChat", userAuth, fetchChats);
-router.post("/user/createGroup", userAuth, createGroupChat);
-router.post("/user/renameGroup",userAuth,renameGroup);
-router.post("/user/addToGroup",userAuth, addToGroup);
-router.delete("/user/removeFromGroup",userAuth, removeFromGroup);
+router.post("/user/createGroup", userAuth, upload.fields([{name:"groupImage",maxCount:1}]), createGroupChat);
+router.post("/user/editGroup", userAuth, upload.fields([{name:"groupImage",maxCount:1}]),editGroup);
+router.post("/user/addToGroup", userAuth, addToGroup);
+router.delete("/user/removeFromGroup", userAuth, removeFromGroup);
+router.delete("/user/leaveGroup", userAuth, leaveGroup);
 module.exports = router;

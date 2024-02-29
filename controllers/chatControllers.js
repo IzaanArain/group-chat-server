@@ -44,7 +44,6 @@ exports.initiateChat = async (req, res) => {
       });
     } else {
       const chatData = new GroupChat({
-        // groupName:"sender",
         isGroupChat: 0,
         users: [userId, receiverId],
       });
@@ -129,6 +128,7 @@ exports.createGroupChat = async (req, res) => {
   try {
     const usersJson = req.body.users;
     const groupName = req.body.name;
+    const groupDescription = req.body.description;
     // if(!req.body.users || !req.body.name){
     //   return res.status(400).send({
     //     status:0,
@@ -153,9 +153,12 @@ exports.createGroupChat = async (req, res) => {
         message: "More than 2 users are required to form a group chat",
       });
     }
+    const groupImage = req?.files.groupImage && req?.files.groupImage.length > 0 ? req?.files.groupImage[0].path : null;
     users.push(req?.user._id.toString());
     const groupChat = await GroupChat.create({
       groupName: groupName,
+      groupDescription: groupDescription,
+      groupImage: groupImage,
       users,
       isGroupChat: 1,
       groupAdmin: req?.user._id,
@@ -184,9 +187,9 @@ exports.createGroupChat = async (req, res) => {
   }
 };
 
-exports.renameGroup = async (req, res) => {
+exports.editGroup = async (req, res) => {
   try {
-    const { groupId, name } = req.body;
+    const { groupId, name, description, } = req.body;
     if (!groupId) {
       return res.status(400).send({
         status: 0,
@@ -205,10 +208,13 @@ exports.renameGroup = async (req, res) => {
     }
     const isGroupChat = await GroupChat.findOne({ _id: groupId });
     if (isGroupChat.isGroupChat === 1) {
+      const groupImage = req?.files.groupImage && req?.files.groupImage.length > 0 ? req?.files.groupImage[0].path : isGroupChat.groupImage;
       const updateGroupName = await GroupChat.findByIdAndUpdate(
         groupId,
         {
-          groupName: name,
+          groupName: name ? name : isGroupChat.name,
+          groupDescription: description ? description : isGroupChat.description,
+          groupImage: groupImage ? groupImage : isGroupChat.groupImage
         },
         { new: true }
       )
@@ -333,3 +339,56 @@ exports.removeFromGroup = async (req, res) => {
     });
   }
 };
+
+exports.leaveGroup = async (req,res) => {
+  try{
+    const groupId = req?.query?.groupId;
+    const userId = req.user._id;
+    if (!groupId) {
+      return res.status(400).send({
+        status: 0,
+        message: "Receiver ID is required!",
+      });
+    } else if (!mongoose.isValidObjectId(groupId)) {
+      return res.status(400).send({
+        status: 0,
+        message: "Not a valid ID",
+      });
+    } if (!userId) {
+      return res.status(400).send({
+        status: 0,
+        message: "Receiver ID is required!",
+      });
+    } else if (!mongoose.isValidObjectId(userId)) {
+      return res.status(400).send({
+        status: 0,
+        message: "Not a valid ID",
+      });
+    }
+    const leavingMember = await GroupChat.findByIdAndUpdate(
+      {groupId:groupId},
+      {$pull:{users:userId}},
+      {new:true}
+    )
+    .populate("users", "name email profileImage")
+    .populate("groupAdmin", "name email profileImage");
+  if (!leavingMember) {
+    return res.status(400).send({
+      status: 0,
+      message: "Group does not exist",
+    });
+  } else {
+    return res.status(400).send({
+      status: 0,
+      message: "Group members removed successfully",
+      data: leavingMember,
+    });
+  }
+  }catch(err){
+    return res.status(500).send({
+      status: 0,
+      message: "Something went wrong",
+      err: err.message,
+    });
+  }
+}
