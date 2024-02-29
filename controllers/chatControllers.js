@@ -296,8 +296,8 @@ exports.addToGroup = async (req, res) => {
 
 exports.removeFromGroup = async (req, res) => {
   try {
-    const groupId = req.query.groupId;
-    const usersJson = req.query.users;
+    const groupId = req?.body?.groupId;
+    const usersJson = req?.body?.users;
     const userIds = JSON.parse(usersJson);
     if (!groupId) {
       return res.status(400).send({
@@ -342,7 +342,7 @@ exports.removeFromGroup = async (req, res) => {
 
 exports.leaveGroup = async (req,res) => {
   try{
-    const groupId = req?.query?.groupId;
+    const groupId = req?.body?.groupId;
     const userId = req.user._id;
     if (!groupId) {
       return res.status(400).send({
