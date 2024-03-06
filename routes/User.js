@@ -30,7 +30,7 @@ router.post("/user/completeProfile", userAuth, upload.fields([{name:"profileImag
 router.post("/user/editProfile", userAuth, upload.fields([{name:"profileImage"}]), editProfile);
 router.post("/user/changePassword", userAuth, changePassword);
 router.post("/user/deleteProfile", userAuth, deleteProfile);
-router.post("/user/signOut", userAuth, signOut);
+router.post("/user/signout", userAuth, signOut);
 // user routes
 router.get("/user/allUsers", userAuth, getAllUsers);
 // chat routes
