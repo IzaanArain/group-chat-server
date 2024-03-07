@@ -5,33 +5,37 @@ exports.getAllUsers = async (req, res) => {
   try {
     const userId = req.user._id;
     const keyword = req.query.search;
+    let filter={};
     console.log(keyword);
-    const users = await User.aggregate([
-      //   {
-      //     $match: {
-      //       $expr: {
-      //         $ne: ["$_id", new mongoose.Types.ObjectId(userId)],
-      //       },
-      //     },
-      //   },
-      {
-        $match: {
-            $and: [
-                {
-                    $expr: {
-                      $ne: ["$_id", new mongoose.Types.ObjectId(userId)],
-                    },
+    if(keyword){
+      filter={
+        $and: [
+            {
+                $expr: {
+                  $ne: ["$_id", new mongoose.Types.ObjectId(userId)],
                 },
-                {
-                  $or: [
-                    // {name: new RegExp(keyword, "i")},
-                    // {email: new RegExp(keyword, "i")},
-                    { email: { $regex: keyword, $options: "i" } },
-                    { name: { $regex: keyword, $options: "i" } },
-                  ],
-                },
+            },
+            {
+              $or: [
+                // {name: new RegExp(keyword, "i")},
+                // {email: new RegExp(keyword, "i")},
+                { email: { $regex: keyword, $options: "i" } },
+                { name: { $regex: keyword, $options: "i" } },
               ],
+            },
+          ],
+    }
+    }else{
+      filter={
+        $expr: {
+          $ne: ["$_id", new mongoose.Types.ObjectId(userId)],
         },
+      }
+    };
+    
+    const users = await User.aggregate([
+      {
+        $match: filter
       },
       {
         $project:{
