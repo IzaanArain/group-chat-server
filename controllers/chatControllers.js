@@ -39,7 +39,7 @@ exports.initiateChat = async (req, res) => {
       //isChat.length > 0
       res.send({
         status: 1,
-        message: "Successful",
+        message: "Chat already exists",
         data: isChat,
       });
     } else {
@@ -51,7 +51,7 @@ exports.initiateChat = async (req, res) => {
       await chatData.populate("users", "name email profileImage"); //-password
       return res.status(200).send({
         status: 1,
-        message: "successful",
+        message: "Successful created indivisual chat",
         data: chatData,
       });
     }
