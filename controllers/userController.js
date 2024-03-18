@@ -6,7 +6,7 @@ exports.getAllUsers = async (req, res) => {
     const userId = req.user._id;
     const keyword = req.query.search;
     let filter={};
-    console.log(keyword);
+    console.log("keyword",keyword);
     if(keyword){
       filter={
         $and: [
