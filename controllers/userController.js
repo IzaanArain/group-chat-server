@@ -5,8 +5,10 @@ exports.getAllUsers = async (req, res) => {
   try {
     const userId = req.user._id;
     const keyword = req.query.search;
+    // console.log("params",req.params);
+    // console.log("keyword",keyword);
     let filter={};
-    console.log("keyword",keyword);
+    console.log(keyword);
     if(keyword){
       filter={
         $and: [
@@ -48,7 +50,7 @@ exports.getAllUsers = async (req, res) => {
     ]);
     return res.status(200).send({
       status: 1,
-      message: "Successful",
+      message:"Successfully retrieved user data",
       data: users,
     });
   } catch (err) {

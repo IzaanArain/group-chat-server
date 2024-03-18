@@ -39,7 +39,7 @@ exports.initiateChat = async (req, res) => {
       //isChat.length > 0
       res.send({
         status: 1,
-        message: "Successful",
+        message: "Chat already exists",
         data: isChat,
       });
     } else {
@@ -51,7 +51,7 @@ exports.initiateChat = async (req, res) => {
       await chatData.populate("users", "name email profileImage"); //-password
       return res.status(200).send({
         status: 1,
-        message: "successful",
+        message: "Successful created indivisual chat",
         data: chatData,
       });
     }
@@ -85,6 +85,9 @@ exports.fetchChats = async (req, res) => {
     //   data:[]
     // })
     // })
+    const totalChats = await GroupChat.countDocuments({
+      users: { $elemMatch: { $eq: userId } },
+    });
     const result = await GroupChat.find({
       users: { $elemMatch: { $eq: userId } },
     })
@@ -103,7 +106,10 @@ exports.fetchChats = async (req, res) => {
       return res.status(200).send({
         status: 1,
         message: "fetched user chats successfully",
-        data: result,
+        data: {
+          totalChats,
+          chats: result,
+        },
       });
     } else {
       return res.status(200).send({
@@ -153,7 +159,10 @@ exports.createGroupChat = async (req, res) => {
         message: "More than 2 users are required to form a group chat",
       });
     }
-    const groupImage = req?.files.groupImage && req?.files.groupImage.length > 0 ? req?.files.groupImage[0].path : null;
+    const groupImage =
+      req?.files.groupImage && req?.files.groupImage.length > 0
+        ? req?.files.groupImage[0].path
+        : null;
     users.push(req?.user._id.toString());
     const groupChat = await GroupChat.create({
       groupName: groupName,
@@ -189,7 +198,7 @@ exports.createGroupChat = async (req, res) => {
 
 exports.editGroup = async (req, res) => {
   try {
-    const { groupId, name, description, } = req.body;
+    const { groupId, name, description } = req.body;
     if (!groupId) {
       return res.status(400).send({
         status: 0,
@@ -208,13 +217,16 @@ exports.editGroup = async (req, res) => {
     }
     const isGroupChat = await GroupChat.findOne({ _id: groupId });
     if (isGroupChat.isGroupChat === 1) {
-      const groupImage = req?.files.groupImage && req?.files.groupImage.length > 0 ? req?.files.groupImage[0].path : isGroupChat.groupImage;
+      const groupImage =
+        req?.files.groupImage && req?.files.groupImage.length > 0
+          ? req?.files.groupImage[0].path
+          : isGroupChat.groupImage;
       const updateGroupName = await GroupChat.findByIdAndUpdate(
         groupId,
         {
           groupName: name ? name : isGroupChat.name,
           groupDescription: description ? description : isGroupChat.description,
-          groupImage: groupImage ? groupImage : isGroupChat.groupImage
+          groupImage: groupImage ? groupImage : isGroupChat.groupImage,
         },
         { new: true }
       )
@@ -313,7 +325,7 @@ exports.removeFromGroup = async (req, res) => {
     if (usersJson && userIds.length > 0) {
       const newMemmbers = await GroupChat.findOneAndUpdate(
         { _id: groupId },
-        {$pull:{users:{$in:userIds}}},
+        { $pull: { users: { $in: userIds } } },
         { new: true }
       )
         .populate("users", "name email profileImage")
@@ -340,8 +352,8 @@ exports.removeFromGroup = async (req, res) => {
   }
 };
 
-exports.leaveGroup = async (req,res) => {
-  try{
+exports.leaveGroup = async (req, res) => {
+  try {
     const groupId = req?.body?.groupId;
     const userId = req.user._id;
     if (!groupId) {
@@ -354,7 +366,8 @@ exports.leaveGroup = async (req,res) => {
         status: 0,
         message: "Not a valid ID",
       });
-    } if (!userId) {
+    }
+    if (!userId) {
       return res.status(400).send({
         status: 0,
         message: "Receiver ID is required!",
@@ -366,29 +379,29 @@ exports.leaveGroup = async (req,res) => {
       });
     }
     const leavingMember = await GroupChat.findByIdAndUpdate(
-      {groupId:groupId},
-      {$pull:{users:userId}},
-      {new:true}
+      { groupId: groupId },
+      { $pull: { users: userId } },
+      { new: true }
     )
-    .populate("users", "name email profileImage")
-    .populate("groupAdmin", "name email profileImage");
-  if (!leavingMember) {
-    return res.status(400).send({
-      status: 0,
-      message: "Group does not exist",
-    });
-  } else {
-    return res.status(400).send({
-      status: 0,
-      message: "Group members removed successfully",
-      data: leavingMember,
-    });
-  }
-  }catch(err){
+      .populate("users", "name email profileImage")
+      .populate("groupAdmin", "name email profileImage");
+    if (!leavingMember) {
+      return res.status(400).send({
+        status: 0,
+        message: "Group does not exist",
+      });
+    } else {
+      return res.status(400).send({
+        status: 0,
+        message: "Group members removed successfully",
+        data: leavingMember,
+      });
+    }
+  } catch (err) {
     return res.status(500).send({
       status: 0,
       message: "Something went wrong",
       err: err.message,
     });
   }
-}
+};
