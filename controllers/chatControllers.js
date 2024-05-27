@@ -51,7 +51,7 @@ exports.initiateChat = async (req, res) => {
       await chatData.populate("users", "name email profileImage"); //-password
       return res.status(200).send({
         status: 1,
-        message: "Successful created indivisual chat",
+        message: "Successful created individual chat",
         data: chatData,
       });
     }
