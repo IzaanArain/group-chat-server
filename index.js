@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const http = require("http");
+const https = require("https");
 require("dotenv").config();
 const cors = require("cors");
 const colors=require("colors")
@@ -10,6 +11,7 @@ const Connect = require("./config/db");
 const userRoutes = require("./routes/User");
 Connect();
 const server = http.createServer(app);
+// const server = https.createServer(app);
 app.use(
   cors({
     origin: "*",

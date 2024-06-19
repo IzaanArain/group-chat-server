@@ -41,4 +41,6 @@ router.post("/user/editGroup", userAuth, upload.fields([{name:"groupImage",maxCo
 router.post("/user/addToGroup", userAuth, addToGroup);
 router.post("/user/removeFromGroup", userAuth, removeFromGroup);
 router.post("/user/leaveGroup", userAuth, leaveGroup);
+// message routes
+
 module.exports = router;

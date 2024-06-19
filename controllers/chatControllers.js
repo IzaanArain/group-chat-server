@@ -20,8 +20,7 @@ exports.initiateChat = async (req, res) => {
         message: "Not a valid ID!",
       });
     }
-    let isChat = await GroupChat.findOne({
-      // find()
+    let isChat = await GroupChat.findOne({  // find()
       isGroupChat: false,
       $and: [
         { users: { $elemMatch: { $eq: userId } } },
