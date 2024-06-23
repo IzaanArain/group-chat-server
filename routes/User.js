@@ -36,7 +36,7 @@ router.get("/user/allUsers", userAuth, getAllUsers);
 // chat routes
 router.post("/user/initiateChat", userAuth, initiateChat);
 router.get("/user/fetchChat", userAuth, fetchChats);
-router.post("/user/createGroup", userAuth, upload.fields([{name:"groupImage",maxCount:1}]), createGroupChat);
+router.post("/user/createGroup", userAuth, createGroupChat); //upload.fields([{name:"groupImage",maxCount:1}])
 router.post("/user/editGroup", userAuth, upload.fields([{name:"groupImage",maxCount:1}]),editGroup);
 router.post("/user/addToGroup", userAuth, addToGroup);
 router.post("/user/removeFromGroup", userAuth, removeFromGroup);

@@ -21,7 +21,7 @@ exports.getAllUsers = async (req, res) => {
               $or: [
                 // {name: new RegExp(keyword, "i")},
                 // {email: new RegExp(keyword, "i")},
-                { email: { $regex: keyword, $options: "i" } },
+                // { email: { $regex: keyword, $options: "i" } },
                 { name: { $regex: keyword, $options: "i" } },
               ],
             },

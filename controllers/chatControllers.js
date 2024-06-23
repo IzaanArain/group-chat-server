@@ -152,21 +152,21 @@ exports.createGroupChat = async (req, res) => {
       });
     }
     const users = JSON.parse(usersJson);
-    if (users.length < 2) {
-      return res.status(400).send({
-        status: 0,
-        message: "More than 2 users are required to form a group chat",
-      });
-    }
-    const groupImage =
-      req?.files.groupImage && req?.files.groupImage.length > 0
-        ? req?.files.groupImage[0].path
-        : null;
+    // if (users.length < 2) {
+    //   return res.status(400).send({
+    //     status: 0,
+    //     message: "More than 2 users are required to form a group chat",
+    //   });
+    // }
+    // const groupImage =
+    //   req?.files.groupImage && req?.files.groupImage.length > 0
+    //     ? req?.files.groupImage[0].path
+    //     : null;
     users.push(req?.user._id.toString());
     const groupChat = await GroupChat.create({
       groupName: groupName,
       groupDescription: groupDescription,
-      groupImage: groupImage,
+      // groupImage: groupImage,
       users,
       isGroupChat: 1,
       groupAdmin: req?.user._id,
